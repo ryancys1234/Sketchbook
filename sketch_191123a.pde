@@ -1,4 +1,4 @@
-//making a controllable bouncing ball
+// Making a controllable bouncing ball
 boolean upkey, downkey, leftkey, rightkey, spacekey;
 ArrayList<Object> myObjects;
 float r, r1 = 0, r2 = 120, r3 = 240;
@@ -13,7 +13,6 @@ void setup() {
 
   object = new Object();
   arc = new Arc();
-  varx = varx - 50;
   colorMode(HSB, 360);
 }
 
@@ -21,11 +20,13 @@ void draw() {
   background(360, 0, 360);
   object.show();
   object.act();
-  
+
   pushMatrix();
   translate(varx, vary);
   fill(222, 60, 260);
+  noStroke();
   rect(0, 600, 2000, 200);
+  popMatrix();
   
   pushMatrix();
   translate(width/4, height/4);
@@ -56,10 +57,9 @@ void draw() {
   if (r3 == 360) {
     r3 = -240;
   }
-  popMatrix();
 }
 
-void keyPressed() { //records arrow keys in boolean variables
+void keyPressed() {
   if (keyCode == UP) upkey = true;
   if (keyCode == DOWN) downkey = true;
   if (keyCode == LEFT) leftkey = true;
@@ -76,39 +76,58 @@ void keyReleased() {
 }
 
 class Object {
-  PVector location, velocity, direction, gravity;
+  //PVector location, velocity, direction, gravity;
+
+  float lx = width/2, ly = height/2, vx = 0, vy = 1, dx = 0, dy = 0, gx = 0, gy = 0.2;
   Object() {
-    location = new PVector(width/2, height/2);
-    velocity = new PVector(0 , 1);
-    direction = new PVector(0, 1);
-    gravity = new PVector(0, 0.2);
+    //location = new PVector(width/2, height/2);
+    //velocity = new PVector(0, 1);
+    //direction = new PVector(0, 0);
+    //gravity = new PVector(0, 0.2);
   }
 
   void show() {
     pushMatrix();
     fill(0);
     stroke(0);
-    ellipse(location.x, location.y, 50, 50);
+    ellipse(lx, ly, 50, 50);
     popMatrix();
   }
 
   void act() {
-    location.add(velocity);
-    velocity.add(gravity);
+    //location.add(velocity);
+    //velocity.add(gravity);
+
+    lx = lx + vx;
+    ly = ly + vy;
+    vx = vx + gx;
+    vy = vy + gy;
+
     if (rightkey) {
-      
+      lx = lx + 5;
     }
     if (leftkey) {
-      velocity.sub(direction);
+      lx = lx - 5;
     }
-    if (location.y + 25 > 600) velocity.y = velocity.y * -0.75;
+    if (ly + 30 >= 600) {
+      vy = abs(vy) * -0.75;
+    }
     //if (location.x == Arc.location.x + 100, location.y == Arc.location.y + 100) {
     //  velocity.y = velocity.y * -1;
     //  velocity.x = velocity.x * -1;
     //}
-    if (spacekey && location.y == 600) {
-      velocity.x = velocity.x * -1.5;
-      velocity.y = velocity.y * -1.5;
+    if (spacekey) {
+      vy = abs(vy) * -1;
+    }
+    if (lx < 0) {
+      vx = abs(vx) * -1;
+    }
+    if (ly < 0) {
+      vy = abs(vy) * -1;
+    }
+    // Moving background and obstacles;
+    if (lx > width/2) {
+      varx = varx + 50;
     }
   }
 }
