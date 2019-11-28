@@ -5,14 +5,14 @@ float r, r1 = 0, r2 = 120, r3 = 240;
 int varx, vary = 0;
 
 Object object;
-Arc arc;
+Obstacle obstacle;
 
 void setup() {
   size(1000, 800);
   myObjects = new ArrayList<Object> ();
 
   object = new Object();
-  arc = new Arc();
+  obstacle = new Obstacle();
   colorMode(HSB, 360);
 }
 
@@ -25,9 +25,9 @@ void draw() {
   translate(varx, vary);
   fill(222, 60, 260);
   noStroke();
-  rect(0, 600, 2000, 200);
+  rect(0, 600, 20000, 200);
   popMatrix();
-  
+
   pushMatrix();
   translate(width/4, height/4);
   noFill();
@@ -103,13 +103,38 @@ class Object {
     vx = vx + gx;
     vy = vy + gy;
 
-    if (rightkey) {
+    int movingDelayR = 10, movingDelayL = 10;
+    boolean allowR = false, allowL = false;
+
+    if (rightkey == true) {
+      lx = lx + 5;
+      allowR = true;
+    }
+    if (rightkey == false && allowR == true) {
+      //movingDelayR--;
+      for (int i = 10; i < 0; i--) {
+        lx = lx - i;
+        allowR = false;
+      }
+    }
+    if (leftkey == true) {
+      lx = lx - 5;
+      allowL = true;
+    }
+    if (rightkey == false && allowL == true) {
+      //movingDelayL--;
+      for (int i = 10; i < 0; i--) {
+        lx = lx + i;
+        allowL = false;
+      }
+    }
+    if ((movingDelayR < 10) && (movingDelayR > 0)) {
       lx = lx + 5;
     }
-    if (leftkey) {
+    if ((movingDelayL < 10) && (movingDelayL > 0)) {
       lx = lx - 5;
     }
-    if (ly + 30 >= 600) {
+    if (ly + 30 >= 600) { // Used abs() here to prevent the movable ball from getting stuck outside the limits of the realm (a classic problem).
       vy = abs(vy) * -0.75;
     }
     //if (location.x == Arc.location.x + 100, location.y == Arc.location.y + 100) {
@@ -127,17 +152,23 @@ class Object {
     }
     // Moving background and obstacles;
     if (lx > width/2) {
-      varx = varx + 50;
+      varx = varx - 50;
     }
   }
 }
 
-class Arc {
-  Arc() {
+class Obstacle {
+  float lx_, ly_;
+  Obstacle() {
+    float lx_1 = width;
+    lx_ = random(100) + lx_1;
   }
 
   void show() {
+    fill(50, 150, 347);
+    rect(lx_, ly_, random(25), random(50));
   }
+
 
   void act() {
   }
