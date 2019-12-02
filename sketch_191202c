@@ -1,0 +1,14 @@
+// Agar.io game
+
+void setup() {
+  size(1000, 800, P3D);
+  background(255);
+}
+
+void draw() {
+  ortho(-width/2, width/2, -height/2, height/2);
+  pushMatrix();
+  translate(width/2, height/2);
+  sphere(50);
+  popMatrix();
+}
