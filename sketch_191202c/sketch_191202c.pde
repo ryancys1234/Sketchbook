@@ -197,7 +197,7 @@ void draw() {
       if (leftqkey) {
         // Calculate the parabolic path to the basket
         float a = (lplayer.getY() - (height/2 - 150)) / ((lplayer.getX() - 200) * (lplayer.getX() - 200));
-        float x = lplayer.getX(), y;
+        float x = basketball.getX(), y;
         y = a * (x - (lplayer.getX() - 200)) * (x - (lplayer.getX() - 200)) + (height/2 - 150);
         basketball.setPosition(x, y);
         x--;
