@@ -1,8 +1,11 @@
 void game() {
   textSize(25);
   fill(0);
-  text("Score: " + rightScore, width*0.80, height*0.10);
-  text("Score: " + leftScore, width*0.10, height*0.10);
+  //rect(
+  text("Score: " + rightScore, width/2 + 50, height*0.2);
+  textMode(CENTER);
+  text("Score: " + leftScore, width/2 - 150, height*0.2);
+  textMode(CENTER);
 
   if (leftScore == 3 && rightPlayerWins == false) {
     mode = 1;

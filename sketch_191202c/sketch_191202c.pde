@@ -23,7 +23,7 @@ FBox ground, lwall, twall, rwall, lbackboard, rbackboard, lstand, rstand;
 FCircle lplayer, rplayer, basketball;
 FLine lbasket, rbasket;
 
-PImage bv;
+PImage bv, bc;
 
 ArrayList lcontacts, rcontacts, bcontacts;
 
@@ -33,16 +33,20 @@ void setup() {
   bv = loadImage("basketball.png");
   bv.resize(50, 50);
 
+  bc = loadImage("basketballcourt.jpg");
+  bc.resize(width, height/4);
+
   Fisica.init(this);
   world = new FWorld();
   world.setGravity(0, 800);
 
-  // Ground ================================================================
+  // Basketball court ================================================================
   ground = new FBox(width, height/4);
   ground.setPosition(width/2, height*0.9);
 
   ground.setStatic(true);
   ground.setFill(102, 183, 91);
+  ground.attachImage(bc);
   ground.setFriction(0);
   ground.setNoStroke();
 
@@ -84,7 +88,7 @@ void setup() {
 
   world.add(rwall);
 
-  // Left basket
+  // Left basket ================================================================
   lbasket = new FLine(width/12, height/2 - 100, width/12 + 100, height/2 - 100);
 
   lbasket.setStroke(0);
@@ -112,6 +116,35 @@ void setup() {
   lstand.setStatic(true);
 
   world.add(lstand);
+
+  // Right basket ================================================================
+  rbasket = new FLine(width*11/12, height/2 - 100, width*11/12 - 100, height/2 - 100);
+
+  rbasket.setStroke(0);
+  rbasket.setStrokeWeight(5);
+  rbasket.setFriction(0);
+  rbasket.setStatic(true);
+
+  world.add(rbasket);
+
+  rbackboard = new FBox(10, 150);
+
+  rbackboard.setPosition(width*11/12 + 10, height/2 - 150);
+  rbackboard.setFill(0);
+  rbackboard.setFriction(0);
+  rbackboard.setNoStroke();
+  rbackboard.setStatic(true);
+
+  world.add(rbackboard);
+
+  rstand = new FBox(30, 350);
+
+  rstand.setPosition(width*11/12 + 35, height/2 + 50);
+  rstand.setFill(0);
+  rstand.setNoStroke();
+  rstand.setStatic(true);
+
+  world.add(rstand);
 
   // Left player ================================================================
   lplayer = new FCircle(100);
@@ -168,6 +201,10 @@ void draw() {
   world.step();
   world.draw();
 
+  if (leftekey == false || rightikey == false) {
+    ballUsed = false;
+  }
+
   // Left player control ================================================================
   leftCanJump = false;
   ArrayList<FContact> lcontacts = lplayer.getContacts();
@@ -190,19 +227,16 @@ void draw() {
   }
   if (dist(lplayer.getX(), lplayer.getY(), basketball.getX(), basketball.getY()) < 100 && ballUsed == false) {
     if (leftekey) {
-      basketball.setPosition(basketball.getX(), height*0.7 - 10);
+      basketball.setPosition(basketball.getX()+25, height*0.7 - 10);
       basketball.addImpulse(0, 200);
     }
-    if (dist(lplayer.getX(), lplayer.getY(), lbasket.getX(), lbasket.getY()) < 300) {
+    if (dist(lplayer.getX(), lplayer.getY(), lbasket.getX(), lbasket.getY()) < 1000) {
       if (leftqkey) {
-        // Calculate the parabolic path to the basket
-        float a = (lplayer.getY() - (height/2 - 150)) / ((lplayer.getX() - 200) * (lplayer.getX() - 200));
-        float x = basketball.getX(), y;
-        y = a * (x - (lplayer.getX() - 200)) * (x - (lplayer.getX() - 200)) + (height/2 - 150);
-        basketball.setPosition(x, y);
-        x--;
+        basketball.addImpulse(2000, -2000);
+        basketball.setRotation(2);
       }
     }
+    ballUsed = true;
   }
 
   // Right player control ================================================================
@@ -225,6 +259,18 @@ void draw() {
   if (rightleftkey) {
     rplayer.addImpulse(-300, 0);
   }
+  if (dist(rplayer.getX(), rplayer.getY(), basketball.getX(), basketball.getY()) < 100 && ballUsed == false) {
+    if (rightpkey) {
+      basketball.setPosition(basketball.getX()-25, height*0.7 - 10);
+      basketball.addImpulse(0, 200);
+    }
+    if (dist(rplayer.getX(), rplayer.getY(), rbasket.getX(), rbasket.getY()) < 1000) {
+      if (rightikey) {
+        basketball.addImpulse(-2000, -2000);
+        basketball.setRotation(2);
+      }
+    }
+  }
 
   // Basketball control ================================================================
   ArrayList<FContact> bcontacts = basketball.getContacts();
@@ -243,10 +289,12 @@ void draw() {
       basketball.setVelocity(0, 0);
       basketball.setForce(0, 0);
     }
-  }
 
-  for (FContact b : bcontacts) {
-    if (b.contains(lbasket)) {
+    if (b.contains(lplayer) || b.contains(rplayer)) {
+      basketball.setRotation(0);
+    }
+
+    if (b.contains(rbasket)) {
       rightScore++;
 
       lplayer.setPosition(width*0.25, height*0.7);
@@ -258,6 +306,16 @@ void draw() {
       basketball.setPosition(width*0.75, height/2);
       basketball.setVelocity(0, 0);
       basketball.setForce(0, 0);
+    }
+    
+    if (leftqkey || rightpkey) {
+      int i = 0;
+      basketball.setRotation(i);
+      i++;
+
+      if (b.contains(ground)) {
+        basketball.setRotation(0);
+      }
     }
   }
 
