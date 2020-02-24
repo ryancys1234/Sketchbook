@@ -1,185 +1,309 @@
+// Basketball game based on Slime Volleyball (oneslime.net).
+//
+
 import fisica.*;
-
-color black = #000000;
-color yellow = #5CFC08;
-color blue = #1708FC;
-color green = #1BCB69;
-color red = #F22027;
-color grey = #2B99A2;
-color brown = #5d8256;
-
-boolean up, down, left, right, space, w, a, s, d;
-boolean canJump;
-
-PImage map;
-int x = 0, y = 0;
-int gs = 20;
-int blockY;
-
-FBox blck, yllw, bl, gr, rd, brwn;
-FBox player;
-FBomb bomb = null; // Doesn't immediately appear; only appears once timer is ended.
-
-ArrayList<FBox> boxes = new ArrayList<FBox>();
-ArrayList mapBlocks;
-ArrayList<FContact> contacts = new ArrayList<FContact>();
 
 FWorld world;
 
+int mode = 0;
+final int game = 0;
+final int gameOverLeft = 1;
+final int gameOverRight = 2;
+
+boolean leftupkey, leftdownkey, leftleftkey, leftrightkey, leftekey, leftqkey;
+boolean rightupkey, rightdownkey, rightleftkey, rightrightkey, rightpkey, rightikey;
+boolean leftCanJump = true, rightCanJump = true;
+boolean leftPlayerWins = false, rightPlayerWins = false;
+boolean ballUsed = false;
+
+int rightScore = 0, leftScore = 0;
+int betweenGamesTime = 0;
+
+FBox ground, lwall, twall, rwall, lbackboard, rbackboard, lstand, rstand;
+FCircle lplayer, rplayer, basketball;
+FLine lbasket, rbasket;
+
+PImage bv;
+
+ArrayList lcontacts, rcontacts, bcontacts;
+
 void setup() {
   size(1000, 800);
+  mode = 0;
+  bv = loadImage("basketball.png");
+  bv.resize(50, 50);
+
   Fisica.init(this);
-  world = new FWorld(-10000, -10000, 10000, 10000);
-  world.setGravity(0, 900);
+  world = new FWorld();
+  world.setGravity(0, 800);
 
-  map = loadImage("Map2.png");
+  // Ground ================================================================
+  ground = new FBox(width, height/4);
+  ground.setPosition(width/2, height*0.9);
 
-  while (y < map.height) {
-    color c = map.get(x, y);
+  ground.setStatic(true);
+  ground.setFill(102, 183, 91);
+  ground.setFriction(0);
+  ground.setNoStroke();
 
-    if (c == black) {
-      blck = new FBox (gs, gs);
-      blck.setFill(black);
-      blck.setPosition(gs*x + gs/2, gs*y + gs/2);
-      blck.setStatic(true);
+  world.add(ground);
 
-      world.add(blck);
-      boxes.add(blck);
-    }
+  // Left wall ================================================================
+  lwall = new FBox(500, height);
 
-    if (c == blue) {
-      bl = new FBox (gs, gs);
+  lwall.setPosition(-250, height/2);
 
-      bl.setFill(blue);
-      bl.setPosition(gs*x + gs/2, gs*y + gs/2);
-      bl.setStatic(true);
+  lwall.setStatic(true);
+  lwall.setFill(0);
+  lwall.setFriction(0);
+  lwall.setNoStroke();
 
-      world.add(bl);
-    }
+  world.add(lwall);
 
-    if (c == green) {
-      gr = new FBox (gs, gs);
+  // Top wall ================================================================
+  twall = new FBox(width, 500);
 
-      gr.setFill(green);
-      gr.setPosition(gs*x + gs/2, gs*y + gs/2);
-      gr.setStatic(true);
+  twall.setPosition(width/2, -250);
 
-      world.add(gr);
-    }
+  twall.setStatic(true);
+  twall.setFill(0);
+  twall.setFriction(0);
+  twall.setNoStroke();
 
-    if (c == brown) {
-      brwn = new FBox (gs, gs);
+  world.add(twall);
 
-      brwn.setFill(brown);
-      brwn.setPosition(gs*x + gs/2, gs*y + gs/2);
-      brwn.setStatic(true);
+  // Right wall ================================================================
+  rwall = new FBox(500, height);
 
-      world.add(brwn);
-    }
+  rwall.setPosition(width+250, height/2);
 
-    x++; // Moves horizontally
-    if (x == map.width) { // If x reached the end, go down one and x = 0
-      x = 0;
-      y++;
-    }
+  rwall.setStatic(true);
+  rwall.setFill(0);
+  rwall.setFriction(0.5);
+  twall.setNoStroke();
+
+  world.add(rwall);
+
+  // Left basket
+  lbasket = new FLine(width/12, height/2 - 100, width/12 + 100, height/2 - 100);
+
+  lbasket.setStroke(0);
+  lbasket.setStrokeWeight(5);
+  lbasket.setFriction(0);
+  lbasket.setStatic(true);
+
+  world.add(lbasket);
+
+  lbackboard = new FBox(10, 150);
+
+  lbackboard.setPosition(width/12 - 10, height/2 - 150);
+  lbackboard.setFill(0);
+  lbackboard.setFriction(0);
+  lbackboard.setNoStroke();
+  lbackboard.setStatic(true);
+
+  world.add(lbackboard);
+
+  lstand = new FBox(30, 350);
+
+  lstand.setPosition(width/12 - 35, height/2 + 50);
+  lstand.setFill(0);
+  lstand.setNoStroke();
+  lstand.setStatic(true);
+
+  world.add(lstand);
+
+  // Left player ================================================================
+  lplayer = new FCircle(100);
+  lplayer.setPosition(width*0.25, height*0.7);
+
+  lplayer.setFill(93, 67, 214);
+
+  lplayer.setDensity(1);
+  lplayer.setFriction(1);
+  lplayer.setRestitution(0);
+  lplayer.setNoStroke();
+
+  world.add(lplayer);
+
+  // Right player ================================================================
+  rplayer = new FCircle(100);
+  rplayer.setPosition(width*0.75, height*0.7);
+
+  rplayer.setFill(255, 18, 34);
+
+  rplayer.setDensity(1);
+  rplayer.setFriction(1);
+  rplayer.setRestitution(0);
+  rplayer.setNoStroke();
+
+  world.add(rplayer);
+
+  // Basketball ================================================================
+  float bXNum = (int) random(2);
+  if (bXNum == 0) {
+    bXNum = 250;
+  } else if (bXNum == 1) {
+    bXNum = 750;
   }
 
-  blockY = (int) random(4);
-  // When block is off screen, eliminate from ArrayList.
-  //int i = 0;
-  //while (i < mapBlocks.size()) { //could also use a for loop
-  //  mapBlock mB = mapBlocks.get(i);
-  //  mB.show();
-  //  mB.act();
-  //  if (mB.getX() < 0) {
-  //    mapBlocks.remove(i);
-  //  } else {
-  //    i++;
-  //  }
-  //}
+  basketball = new FCircle(50);
+  basketball.attachImage(bv);
+  basketball.setPosition(bXNum, height/2);
 
-  //for (int blockX = width; blockX < 100; blockX++) {
-  //  blck = new FBox (gs, gs);
-  //  blck.setFill(black);
-  //  blck.setPosition(blockX, blockY);
-  //  blck.setStatic(true);
+  basketball.setStroke(0);
+  basketball.setStrokeWeight(1);
+  basketball.setFill(152, 250, 73);
 
-  //  world.add(blck);
-  //}
+  basketball.setRotatable(true);
+  basketball.setDensity(1);
+  basketball.setFriction(0);
+  basketball.setRestitution(0.8);
 
-  player = new FBox(gs*2, gs*2);
-  player.setPosition(width/4, height/2);
-
-  player.setStroke(0);
-  player.setStrokeWeight(1);
-  player.setFill(black);
-
-  player.setDensity(1);
-  player.setFriction(1);
-  player.setRestitution(0);
-  player.setNoStroke();
-  player.setRotatable(false);
-
-  world.add(player);
+  world.add(basketball);
 }
 
 void draw() {
   background(255);
-
-  pushMatrix();
-  translate(-player.getX() + width/2, -player.getY() + height/2);
   world.step();
   world.draw();
-  popMatrix();
 
-  canJump = false;
-  contacts = player.getContacts();
+  // Left player control ================================================================
+  leftCanJump = false;
+  ArrayList<FContact> lcontacts = lplayer.getContacts();
 
-  int i = 0;
-  while (i < contacts.size) {
-    FContact c = contacts.get(i);
-    if (c.contains(blck)) canJump = true;
-    i++;
+  for (FContact c : lcontacts) {
+    if (c.contains(ground)) leftCanJump = true;
   }
 
-  if (up || w) {
-    player.addImpulse(0, -100);
+  if (leftupkey && leftCanJump) {
+    lplayer.addImpulse(0, -5000);
   }
-  if (down || s) {
-    player.addImpulse(0, 100);
+  if (leftdownkey) {
+    lplayer.addImpulse(0, 700);
   }
-  if (right || d) {
-    player.addImpulse(100, 0);
+  if (leftrightkey) {
+    lplayer.addImpulse(300, 0);
   }
-  if (left || a) {
-    player.addImpulse(-100, 0);
+  if (leftleftkey) {
+    lplayer.addImpulse(-300, 0);
   }
-  if (space && bomb == null) {
-    bomb = new FBomb();
+  if (dist(lplayer.getX(), lplayer.getY(), basketball.getX(), basketball.getY()) < 100 && ballUsed == false) {
+    if (leftekey) {
+      basketball.setPosition(basketball.getX(), height*0.7 - 10);
+      basketball.addImpulse(0, 200);
+    }
+    if (dist(lplayer.getX(), lplayer.getY(), lbasket.getX(), lbasket.getY()) < 300) {
+      if (leftqkey) {
+        // Calculate the parabolic path to the basket
+        float a = (lplayer.getY() - (height/2 - 150)) / ((lplayer.getX() - 200) * (lplayer.getX() - 200));
+        float x = lplayer.getX(), y;
+        y = a * (x - (lplayer.getX() - 200)) * (x - (lplayer.getX() - 200)) + (height/2 - 150);
+        basketball.setPosition(x, y);
+        x--;
+      }
+    }
   }
-  if (bomb != null) bomb.act();
+
+  // Right player control ================================================================
+  rightCanJump = false;
+  ArrayList<FContact> rcontacts = rplayer.getContacts();
+
+  for (FContact c : rcontacts) {
+    if (c.contains(ground)) rightCanJump = true;
+  }
+
+  if (rightupkey && rightCanJump) {
+    rplayer.addImpulse(0, -5000);
+  }
+  if (rightdownkey) {
+    rplayer.addImpulse(0, 700);
+  }
+  if (rightrightkey) {
+    rplayer.addImpulse(300, 0);
+  }
+  if (rightleftkey) {
+    rplayer.addImpulse(-300, 0);
+  }
+
+  // Basketball control ================================================================
+  ArrayList<FContact> bcontacts = basketball.getContacts();
+
+  for (FContact b : bcontacts) {
+    if (b.contains(lbasket)) {
+      leftScore++;
+
+      lplayer.setPosition(width*0.25, height*0.7);
+      lplayer.setVelocity(0, 0);
+      lplayer.setForce(0, 0);
+      rplayer.setPosition(width*0.75, height*0.7);
+      rplayer.setVelocity(0, 0);
+      rplayer.setForce(0, 0);
+      basketball.setPosition(width*0.25, height/2);
+      basketball.setVelocity(0, 0);
+      basketball.setForce(0, 0);
+    }
+  }
+
+  for (FContact b : bcontacts) {
+    if (b.contains(lbasket)) {
+      rightScore++;
+
+      lplayer.setPosition(width*0.25, height*0.7);
+      lplayer.setVelocity(0, 0);
+      lplayer.setForce(0, 0);
+      rplayer.setPosition(width*0.75, height*0.7);
+      rplayer.setVelocity(0, 0);
+      rplayer.setForce(0, 0);
+      basketball.setPosition(width*0.75, height/2);
+      basketball.setVelocity(0, 0);
+      basketball.setForce(0, 0);
+    }
+  }
+
+  if (mode == 0) {
+    game();
+  } else if (mode == 1) {
+    leftWins();
+  } else if (mode == 2) {
+    rightWins();
+  }
 }
 
 void keyPressed() {
-  if (keyCode == UP) up = true;
-  if (keyCode == DOWN) down = true;
-  if (keyCode == LEFT) left = true;
-  if (keyCode == RIGHT) right = true;
-  if (keyCode == ' ') space = true;
-  if (keyCode == 'W' || keyCode == 'w') w = true;
-  if (keyCode == 'A' || keyCode == 'a') a = true;
-  if (keyCode == 'S' || keyCode == 's') s = true;
-  if (keyCode == 'D' || keyCode == 'd') d = true;
+  if (keyCode == UP) rightupkey = true;
+  if (keyCode == DOWN) rightdownkey = true;
+  if (keyCode == LEFT) rightleftkey = true;
+  if (keyCode == RIGHT) rightrightkey = true;
+  if (keyCode == 'P' || keyCode == 'p') rightpkey = true;
+  if (keyCode == 'I' || keyCode == 'i') rightikey = true;
+  if (keyCode == 'W' || keyCode == 'w') leftupkey = true;
+  if (keyCode == 'S' || keyCode == 's') leftdownkey = true;
+  if (keyCode == 'A' || keyCode == 'a') leftleftkey = true;
+  if (keyCode == 'D' || keyCode == 'd') leftrightkey = true;
+  if (keyCode == 'E' || keyCode == 'e') leftekey = true;
+  if (keyCode == 'Q' || keyCode == 'q') leftqkey = true;
 }
 
 void keyReleased() {
-  if (keyCode == UP) up = false;
-  if (keyCode == DOWN) down = false;
-  if (keyCode == LEFT) left = false;
-  if (keyCode == RIGHT) right = false;
-  if (keyCode == ' ') space = false;
-  if (keyCode == 'W' || keyCode == 'w') w = false;
-  if (keyCode == 'A' || keyCode == 'a') a = false;
-  if (keyCode == 'S' || keyCode == 's') s = false;
-  if (keyCode == 'D' || keyCode == 'd') d = false;
+  if (keyCode == UP) rightupkey = false;
+  if (keyCode == DOWN) rightdownkey = false;
+  if (keyCode == LEFT) rightleftkey = false;
+  if (keyCode == RIGHT) rightrightkey = false;
+  if (keyCode == 'P' || keyCode == 'p') rightpkey = false;
+  if (keyCode == 'I' || keyCode == 'i') rightikey = false;
+  if (keyCode == 'W' || keyCode == 'w') leftupkey = false;
+  if (keyCode == 'S' || keyCode == 's') leftdownkey = false;
+  if (keyCode == 'A' || keyCode == 'a') leftleftkey = false;
+  if (keyCode == 'D' || keyCode == 'd') leftrightkey = false;
+  if (keyCode == 'E' || keyCode == 'e') leftekey = false;
+  if (keyCode == 'Q' || keyCode == 'q') leftqkey = false;
+}
+
+void mouseReleased() {
+  if (mode == 1) {
+    leftMouseReleased();
+  } else if (mode == 2) {
+    rightMouseReleased();
+  }
 }
