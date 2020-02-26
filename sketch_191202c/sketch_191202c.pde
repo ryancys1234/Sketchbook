@@ -9,15 +9,20 @@ int mode = 0;
 final int game = 0;
 final int gameOverLeft = 1;
 final int gameOverRight = 2;
+final int intro = 3;
+final int tutorial = 4;
 
 boolean leftupkey, leftdownkey, leftleftkey, leftrightkey, leftekey, leftqkey;
 boolean rightupkey, rightdownkey, rightleftkey, rightrightkey, rightpkey, rightikey;
 boolean leftCanJump = true, rightCanJump = true;
 boolean leftPlayerWins = false, rightPlayerWins = false;
 boolean ballUsed = false;
+boolean happenedOnce = false, beforeHappened = false;
 
 int rightScore = 0, leftScore = 0;
 int betweenGamesTime = 0;
+int timer = 0, timeSeconds = 0, timeMinutes = 0;
+int leftFoul, rightFoul;
 
 FBox ground, lwall, twall, rwall, lbackboard, rbackboard, lstand, rstand;
 FCircle lplayer, rplayer, basketball;
@@ -35,7 +40,7 @@ void setup() {
 
   bc = loadImage("basketballcourt.jpg");
   bc.resize(width, height/4);
-  
+
   sbv = loadImage("scoreboard.png");
   sbv.resize(300, 160);
 
@@ -204,6 +209,12 @@ void draw() {
   world.step();
   world.draw();
 
+  timer++;
+  if (timer == 60) {
+    timeSeconds++;
+    timer = 0;
+  }
+
   if (leftekey == false || rightikey == false) {
     ballUsed = false;
   }
@@ -214,6 +225,13 @@ void draw() {
 
   for (FContact c : lcontacts) {
     if (c.contains(ground)) leftCanJump = true;
+    if (c.contains(rplayer) && happenedOnce == false) {
+      leftFoul++;
+      happenedOnce = true;
+    }
+    if (!c.contains(rplayer)) {
+      happenedOnce = false;
+    }
   }
 
   if (leftupkey && leftCanJump) {
@@ -223,15 +241,15 @@ void draw() {
     lplayer.addImpulse(0, 700);
   }
   if (leftrightkey) {
-    lplayer.addImpulse(300, 0);
+    lplayer.addImpulse(100, 0);
   }
   if (leftleftkey) {
-    lplayer.addImpulse(-300, 0);
+    lplayer.addImpulse(-100, 0);
   }
-  if (dist(lplayer.getX(), lplayer.getY(), basketball.getX(), basketball.getY()) < 100 && ballUsed == false) {
+  if (dist(lplayer.getX(), lplayer.getY(), basketball.getX(), basketball.getY()) < 80 && ballUsed == false) {
     if (leftekey) {
       basketball.setPosition(basketball.getX()+25, height*0.7 - 10);
-      basketball.addImpulse(0, 200);
+      basketball.addImpulse(lplayer.getX(), 200);
     }
     if (dist(lplayer.getX(), lplayer.getY(), lbasket.getX(), lbasket.getY()) < 1000) {
       if (leftqkey) {
@@ -248,6 +266,13 @@ void draw() {
 
   for (FContact c : rcontacts) {
     if (c.contains(ground)) rightCanJump = true;
+    if (c.contains(lplayer)) {
+      rightFoul++;
+      happenedOnce = true;
+    }
+    if (!c.contains(lplayer)) {
+      happenedOnce = false;
+    }
   }
 
   if (rightupkey && rightCanJump) {
@@ -257,15 +282,15 @@ void draw() {
     rplayer.addImpulse(0, 700);
   }
   if (rightrightkey) {
-    rplayer.addImpulse(300, 0);
+    rplayer.addImpulse(100, 0);
   }
   if (rightleftkey) {
-    rplayer.addImpulse(-300, 0);
+    rplayer.addImpulse(-100, 0);
   }
-  if (dist(rplayer.getX(), rplayer.getY(), basketball.getX(), basketball.getY()) < 100 && ballUsed == false) {
+  if (dist(rplayer.getX(), rplayer.getY(), basketball.getX(), basketball.getY()) < 80 && ballUsed == false) {
     if (rightpkey) {
       basketball.setPosition(basketball.getX()-25, height*0.7 - 10);
-      basketball.addImpulse(0, 200);
+      basketball.addImpulse(-rplayer.getX(), 200);
     }
     if (dist(rplayer.getX(), rplayer.getY(), rbasket.getX(), rbasket.getY()) < 1000) {
       if (rightikey) {
@@ -311,10 +336,10 @@ void draw() {
       basketball.setVelocity(0, 0);
       basketball.setForce(0, 0);
     }
-    
+
     if (b.contains(ground)) {
-        basketball.setRotation(0.5);
-      }
+      basketball.setRotation(0.5);
+    }
   }
 
   if (mode == 0) {

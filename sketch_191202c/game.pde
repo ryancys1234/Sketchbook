@@ -5,6 +5,18 @@ void game() {
   textAlign(CENTER);
   text("Left", width/2 - 105, height*0.025);
   text("Right", width/2 + 100, height*0.025);
+  
+  text(leftFoul, width/2 - 105, height*0.175);
+  text(rightFoul, width/2 + 100, height*0.175);
+  
+  textSize(30);
+  text(timeMinutes + ":" + timeSeconds, width/2, height*0.045);
+  
+  if (timeSeconds == 60) {
+    timeMinutes++;
+    timeSeconds = 0;
+  }
+  
   textSize(25);
   fill(#ED0202);
   text(rightScore, width/2 + 100, height*0.075);
