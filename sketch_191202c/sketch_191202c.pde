@@ -23,7 +23,7 @@ FBox ground, lwall, twall, rwall, lbackboard, rbackboard, lstand, rstand;
 FCircle lplayer, rplayer, basketball;
 FLine lbasket, rbasket;
 
-PImage bv, bc;
+PImage bv, bc, sbv;
 
 ArrayList lcontacts, rcontacts, bcontacts;
 
@@ -35,6 +35,9 @@ void setup() {
 
   bc = loadImage("basketballcourt.jpg");
   bc.resize(width, height/4);
+  
+  sbv = loadImage("scoreboard.png");
+  sbv.resize(300, 160);
 
   Fisica.init(this);
   world = new FWorld();
@@ -270,13 +273,14 @@ void draw() {
         basketball.setRotation(2);
       }
     }
+    ballUsed = true;
   }
 
   // Basketball control ================================================================
   ArrayList<FContact> bcontacts = basketball.getContacts();
 
   for (FContact b : bcontacts) {
-    if (b.contains(lbasket)) {
+    if (b.contains(rbasket)) {
       leftScore++;
 
       lplayer.setPosition(width*0.25, height*0.7);
@@ -294,7 +298,7 @@ void draw() {
       basketball.setRotation(0);
     }
 
-    if (b.contains(rbasket)) {
+    if (b.contains(lbasket)) {
       rightScore++;
 
       lplayer.setPosition(width*0.25, height*0.7);
@@ -308,15 +312,9 @@ void draw() {
       basketball.setForce(0, 0);
     }
     
-    if (leftqkey || rightpkey) {
-      int i = 0;
-      basketball.setRotation(i);
-      i++;
-
-      if (b.contains(ground)) {
-        basketball.setRotation(0);
+    if (b.contains(ground)) {
+        basketball.setRotation(0.5);
       }
-    }
   }
 
   if (mode == 0) {

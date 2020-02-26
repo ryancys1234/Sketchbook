@@ -1,11 +1,14 @@
 void game() {
+  textSize(15);
+  image(sbv, 350, 0, 300, 160);
+  fill(255);
+  textAlign(CENTER);
+  text("Left", width/2 - 105, height*0.025);
+  text("Right", width/2 + 100, height*0.025);
   textSize(25);
-  fill(0);
-  //rect(
-  text("Score: " + rightScore, width/2 + 50, height*0.2);
-  textMode(CENTER);
-  text("Score: " + leftScore, width/2 - 150, height*0.2);
-  textMode(CENTER);
+  fill(#ED0202);
+  text(rightScore, width/2 + 100, height*0.075);
+  text(leftScore, width/2 - 105, height*0.075);
 
   if (leftScore == 3 && rightPlayerWins == false) {
     mode = 1;
