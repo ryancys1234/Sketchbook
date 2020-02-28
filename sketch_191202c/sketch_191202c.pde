@@ -23,6 +23,7 @@ int rightScore = 0, leftScore = 0;
 int betweenGamesTime = 180;
 int timer = 0, timeSeconds = 0, timeMinutes = 0;
 int leftFoul, rightFoul;
+int lBounceTimes = 0, rBounceTimes = 0;
 
 FBox ground, lwall, twall, rwall, lbackboard, rbackboard, lstand, rstand;
 FCircle lplayer, rplayer, basketball;
@@ -63,6 +64,7 @@ void setup() {
   ground.attachImage(bc);
   ground.setFriction(0);
   ground.setNoStroke();
+  ground.setGrabbable(false);
 
   world.add(ground);
 
@@ -75,6 +77,7 @@ void setup() {
   lwall.setFill(0);
   lwall.setFriction(0);
   lwall.setNoStroke();
+  lwall.setGrabbable(false);
 
   world.add(lwall);
 
@@ -87,6 +90,7 @@ void setup() {
   twall.setFill(0);
   twall.setFriction(0);
   twall.setNoStroke();
+  twall.setGrabbable(false);
 
   world.add(twall);
 
@@ -98,7 +102,8 @@ void setup() {
   rwall.setStatic(true);
   rwall.setFill(0);
   rwall.setFriction(0.5);
-  twall.setNoStroke();
+  rwall.setNoStroke();
+  rwall.setGrabbable(false);
 
   world.add(rwall);
 
@@ -109,6 +114,7 @@ void setup() {
   lbasket.setStrokeWeight(5);
   lbasket.setFriction(0);
   lbasket.setStatic(true);
+  lbasket.setGrabbable(false);
 
   world.add(lbasket);
 
@@ -119,6 +125,7 @@ void setup() {
   lbackboard.setFriction(0);
   lbackboard.setNoStroke();
   lbackboard.setStatic(true);
+  lbackboard.setGrabbable(false);
 
   world.add(lbackboard);
 
@@ -128,6 +135,7 @@ void setup() {
   lstand.setFill(0);
   lstand.setNoStroke();
   lstand.setStatic(true);
+  lstand.setGrabbable(false);
 
   world.add(lstand);
 
@@ -138,6 +146,7 @@ void setup() {
   rbasket.setStrokeWeight(5);
   rbasket.setFriction(0);
   rbasket.setStatic(true);
+  rbasket.setGrabbable(false);
 
   world.add(rbasket);
 
@@ -148,6 +157,7 @@ void setup() {
   rbackboard.setFriction(0);
   rbackboard.setNoStroke();
   rbackboard.setStatic(true);
+  rbackboard.setGrabbable(false);
 
   world.add(rbackboard);
 
@@ -157,6 +167,7 @@ void setup() {
   rstand.setFill(0);
   rstand.setNoStroke();
   rstand.setStatic(true);
+  rstand.setGrabbable(false);
 
   world.add(rstand);
 
@@ -170,6 +181,7 @@ void setup() {
   lplayer.setFriction(1);
   lplayer.setRestitution(0);
   lplayer.setNoStroke();
+  lplayer.setGrabbable(false);
 
   world.add(lplayer);
 
@@ -183,6 +195,7 @@ void setup() {
   rplayer.setFriction(1);
   rplayer.setRestitution(0);
   rplayer.setNoStroke();
+  rplayer.setGrabbable(false);
 
   world.add(rplayer);
 
@@ -231,13 +244,6 @@ void draw() {
 
   for (FContact c : lcontacts) {
     if (c.contains(ground)) leftCanJump = true;
-    if (c.contains(rplayer) && happenedOnce == false) {
-      leftFoul++;
-      happenedOnce = true;
-    }
-    if (!c.contains(rplayer)) {
-      happenedOnce = false;
-    }
   }
 
   if (leftupkey && leftCanJump) {
@@ -256,6 +262,7 @@ void draw() {
     if (leftekey) {
       basketball.setPosition(basketball.getX()+25, height*0.7 - 10);
       basketball.addImpulse(lplayer.getX(), 200);
+      lBounceTimes++;
     }
     if (dist(lplayer.getX(), lplayer.getY(), lbasket.getX(), lbasket.getY()) < 1000) {
       if (leftqkey) {
@@ -272,13 +279,6 @@ void draw() {
 
   for (FContact c : rcontacts) {
     if (c.contains(ground)) rightCanJump = true;
-    if (c.contains(lplayer)) {
-      rightFoul++;
-      happenedOnce = true;
-    }
-    if (!c.contains(lplayer)) {
-      happenedOnce = false;
-    }
   }
 
   if (rightupkey && rightCanJump) {
@@ -297,6 +297,7 @@ void draw() {
     if (rightpkey) {
       basketball.setPosition(basketball.getX()-25, height*0.7 - 10);
       basketball.addImpulse(-rplayer.getX(), 200);
+      rBounceTimes++;
     }
     if (dist(rplayer.getX(), rplayer.getY(), rbasket.getX(), rbasket.getY()) < 1000) {
       if (rightikey) {
@@ -313,9 +314,10 @@ void draw() {
   for (FContact b : bcontacts) {
     if (b.contains(rbasket)) {
       leftScore++;
-      basketball.setPosition(basketball.getX(), height/2 - 70);
+      basketball.setPosition(width*11/12 - 50, height/2);
+      println(basketball.getY());
 
-      if (basketball.getY() >= 450) {
+      if (basketball.getY() >= 400) {
         lplayer.setPosition(width*0.25, height*0.7);
         lplayer.setVelocity(0, 0);
         lplayer.setForce(0, 0);
@@ -337,9 +339,10 @@ void draw() {
 
     if (b.contains(lbasket)) {
       rightScore++;
-      basketball.setPosition(basketball.getX(), height/2 - 70);
+      basketball.setPosition(width/12 + 50, height/2);
+      println(basketball.getY());
 
-      if (basketball.getY() >= 450) {
+      if (basketball.getY() >= 400) {
         lplayer.setPosition(width*0.25, height*0.7);
         lplayer.setVelocity(0, 0);
         lplayer.setForce(0, 0);
