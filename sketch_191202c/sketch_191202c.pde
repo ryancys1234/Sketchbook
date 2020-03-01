@@ -1,5 +1,10 @@
 // Basketball game based on Slime Volleyball (oneslime.net).
 //
+/*
+   Problems: Foul system (3 bounces), reset after ball through hoop.
+   What's next: Instructions page.
+   
+*/
 
 import fisica.*;
 
@@ -9,21 +14,20 @@ int mode = 0;
 final int game = 0;
 final int gameOverLeft = 1;
 final int gameOverRight = 2;
-final int intro = 3;
-final int tutorial = 4;
 
 boolean leftupkey, leftdownkey, leftleftkey, leftrightkey, leftekey, leftqkey;
 boolean rightupkey, rightdownkey, rightleftkey, rightrightkey, rightpkey, rightikey;
 boolean leftCanJump = true, rightCanJump = true;
 boolean leftPlayerWins = false, rightPlayerWins = false;
 boolean ballUsed = false;
-boolean happenedOnce = false, beforeHappened = false;
+boolean thruHoop = false;
 
 int rightScore = 0, leftScore = 0;
 int betweenGamesTime = 180;
 int timer = 0, timeSeconds = 0, timeMinutes = 0;
 int leftFoul, rightFoul;
 int lBounceTimes = 0, rBounceTimes = 0;
+int seq = 0;
 
 FBox ground, lwall, twall, rwall, lbackboard, rbackboard, lstand, rstand;
 FCircle lplayer, rplayer, basketball;
@@ -316,21 +320,7 @@ void draw() {
       leftScore++;
       basketball.setPosition(width*11/12 - 50, height/2);
       println(basketball.getY());
-
-      if (basketball.getY() >= 400) {
-        lplayer.setPosition(width*0.25, height*0.7);
-        lplayer.setVelocity(0, 0);
-        lplayer.setForce(0, 0);
-        rplayer.setPosition(width*0.75, height*0.7);
-        rplayer.setVelocity(0, 0);
-        rplayer.setForce(0, 0);
-        basketball.setPosition(width*0.25, height/2);
-        basketball.setVelocity(0, 0);
-        basketball.setForce(0, 0);
-
-        timeSeconds = 0;
-        timeMinutes = 0;
-      }
+      thruHoop = true;
     }
 
     if (b.contains(lplayer) || b.contains(rplayer)) {
@@ -341,25 +331,27 @@ void draw() {
       rightScore++;
       basketball.setPosition(width/12 + 50, height/2);
       println(basketball.getY());
-
-      if (basketball.getY() >= 400) {
-        lplayer.setPosition(width*0.25, height*0.7);
-        lplayer.setVelocity(0, 0);
-        lplayer.setForce(0, 0);
-        rplayer.setPosition(width*0.75, height*0.7);
-        rplayer.setVelocity(0, 0);
-        rplayer.setForce(0, 0);
-        basketball.setPosition(width*0.75, height/2);
-        basketball.setVelocity(0, 0);
-        basketball.setForce(0, 0);
-
-        timeSeconds = 0;
-        timeMinutes = 0;
-      }
+      thruHoop = true;
     }
 
     if (b.contains(ground)) {
       basketball.setRotation(0.5);
+    }
+
+    if ((basketball.getY() == height/2) && thruHoop == true) {
+      lplayer.setPosition(width*0.25, height*0.7);
+      lplayer.setVelocity(0, 0);
+      lplayer.setForce(0, 0);
+      rplayer.setPosition(width*0.75, height*0.7);
+      rplayer.setVelocity(0, 0);
+      rplayer.setForce(0, 0);
+      basketball.setPosition(width*0.25, height/2);
+      basketball.setVelocity(0, 0);
+      basketball.setForce(0, 0);
+
+      timeSeconds = 0;
+      timeMinutes = 0;
+      thruHoop = false;
     }
   }
 
@@ -403,7 +395,9 @@ void keyReleased() {
 }
 
 void mouseReleased() {
-  if (mode == 1) {
+  if (mode == 0) {
+    gameMouseReleased();
+  } else if (mode == 1) {
     leftMouseReleased();
   } else if (mode == 2) {
     rightMouseReleased();

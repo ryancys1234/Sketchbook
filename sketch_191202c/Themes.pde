@@ -34,6 +34,15 @@ void game() {
   
   image(lbh, width/12, height/2 - 100);
   image(rbh, width*11/12 - 100, height/2 - 100);
+  
+  rect(width/2, height/2, 50, 50);
+  noStroke();
+}
+
+void gameMouseReleased() {
+  if (dist(mouseX, mouseY, width/2 + 25, height/2 + 25) <= 25) {
+    instructions();
+  }
 }
 
 void leftWins() {
@@ -74,4 +83,29 @@ void rightMouseReleased() {
   setup();
   leftPlayerWins = false;
   rightPlayerWins = false;
+}
+
+void instructions() {
+  fill(#6A67D8);
+  rect(100, 100, height - 200, width - 200);
+  noStroke();
+  
+  fill(255);
+  text("Tutorial", width/2, height/2);
+  
+  text("Left player:", width/4, height/4);
+  text("W = up", width/4, height/4 + 25);
+  text("S = down", width/4, height/4 + 50);
+  text("A = left", width/4, height/4 + 75);
+  text("D = right", width/4, height/4 + 100);
+  text("E = dribble", width/4, height/4 + 125);
+  text("Q = shoot", width/4, height/4 + 150);
+  
+  text("Right player:", width*3/4, height/4);
+  text("↑ = up", width*3/4, height/4 + 25);
+  text("↓ = down", width*3/4, height/4 + 50);
+  text("← = left", width*3/4, height/4 + 75);
+  text("→ = right", width*3/4, height/4 + 100);
+  text("P = dribble", width*3/4, height/4 + 125);
+  text("I = shoot", width*3/4, height/4 + 150);
 }
