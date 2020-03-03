@@ -19,7 +19,8 @@ boolean rightupkey, rightdownkey, rightleftkey, rightrightkey, rightpkey, righti
 boolean leftCanJump = true, rightCanJump = true;
 boolean leftPlayerWins = false, rightPlayerWins = false;
 boolean ballUsed = false;
-boolean thruHoop = false;
+boolean lThruHoop = false, rThruHoop;
+boolean lTest = false, rTest = false;
 
 int rightScore = 0, leftScore = 0;
 int betweenGamesTime = 180;
@@ -29,6 +30,7 @@ int lBounceTimes = 0, rBounceTimes = 0;
 int seq = 0;
 int buttonColor;
 int lCollison = 1, rCollison = 1;
+int bXNum1, bXNum2;
 
 FBox ground, lwall, twall, rwall, lbackboard, rbackboard, lstand, rstand;
 FCircle lplayer, rplayer, basketball;
@@ -212,16 +214,16 @@ void setup() {
   world.add(rplayer);
 
   // Basketball ================================================================
-  float bXNum = (int) random(2);
-  if (bXNum == 0) {
-    bXNum = 250;
-  } else if (bXNum == 1) {
-    bXNum = 750;
+  bXNum1 = (int) random(2);
+  if (bXNum1 == 0) {
+    bXNum2 = 250;
+  } else if (bXNum1 == 1) {
+    bXNum2 = 750;
   }
 
   basketball = new FCircle(50);
   basketball.attachImage(bv);
-  basketball.setPosition(bXNum, height/2);
+  basketball.setPosition(bXNum2, height/2);
 
   basketball.setStroke(0);
   basketball.setStrokeWeight(1);
@@ -256,7 +258,10 @@ void draw() {
 
   for (FContact c : lcontacts) {
     if (c.contains(ground)) leftCanJump = true;
-    if (c.contains(rplayer)) lCollison++;
+    if (c.contains(rplayer)) {
+      lCollison++;
+      println(lCollison);
+    }
   }
   
   if (lCollison % 120 == 0) {
@@ -296,7 +301,10 @@ void draw() {
 
   for (FContact c : rcontacts) {
     if (c.contains(ground)) rightCanJump = true;
-    if (c.contains(rplayer)) rCollison++;
+    if (c.contains(rplayer)) {
+      rCollison++;
+      println(rCollison);
+    }
   }
 
   if (rCollison % 120 == 0) {
@@ -338,18 +346,14 @@ void draw() {
       leftScore++;
       basketball.setPosition(width*11/12 - 50, height/2 - 70);
       basketball.setVelocity(basketball.getX(), 10);
-      thruHoop = true;
+      lThruHoop = true;
     }
-
-    if (b.contains(lplayer) || b.contains(rplayer)) {
-      basketball.setRotation(0);
-    }
-
+    
     if (b.contains(lbasket)) {
       rightScore++;
       basketball.setPosition(width/12 + 50, height/2 - 70);
       basketball.setVelocity(basketball.getX(), 10);
-      thruHoop = true;
+      rThruHoop = true;
     }
 
     if (b.contains(ground)) {
@@ -357,20 +361,42 @@ void draw() {
     }
   }
 
-  if ((basketball.getY() >= height*0.7) && thruHoop == true) {
-    lplayer.setPosition(width*0.25, height*0.7);
+  if ((basketball.getY() >= height*0.7) && lThruHoop == true) {
+    lplayer.setPosition(width*0.25, height*0.7 + 10);
     lplayer.setVelocity(0, 0);
     lplayer.setForce(0, 0);
-    rplayer.setPosition(width*0.75, height*0.7);
+    rplayer.setPosition(width*0.75, height*0.7 + 10);
     rplayer.setVelocity(0, 0);
     rplayer.setForce(0, 0);
-    basketball.setPosition(width*0.25, height/2);
+    
+    bXNum2 = 250;
+    
+    basketball.setPosition(bXNum2, height/2);
     basketball.setVelocity(0, 0);
     basketball.setForce(0, 0);
 
     intTimeSeconds = 0;
     timeMinutes = 0;
-    thruHoop = false;
+    lThruHoop = false;
+  }
+  
+  if ((basketball.getY() >= height*0.7) && rThruHoop == true) {
+    lplayer.setPosition(width*0.25, height*0.7 + 10);
+    lplayer.setVelocity(0, 0);
+    lplayer.setForce(0, 0);
+    rplayer.setPosition(width*0.75, height*0.7 + 10);
+    rplayer.setVelocity(0, 0);
+    rplayer.setForce(0, 0);
+    
+    bXNum2 = 750;
+    
+    basketball.setPosition(bXNum2, height/2);
+    basketball.setVelocity(0, 0);
+    basketball.setForce(0, 0);
+
+    intTimeSeconds = 0;
+    timeMinutes = 0;
+    rThruHoop = false;
   }
 
   if (mode == 0) {

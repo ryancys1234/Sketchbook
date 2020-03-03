@@ -55,6 +55,14 @@ void game() {
   if ((seq % 2) != 0) {
     instructions.add(new instruction());
   }
+  
+  if (bXNum2 == 250) {
+    fill(#FF7003);
+    text("←", width/2 - 118, height*0.12 - 10);
+  } else if (bXNum2 == 750) {
+    fill(#FF7003);
+    text("→", width/2 + 115, height*0.12 - 10);
+  }
 }
 
 void gameMouseReleased() {
