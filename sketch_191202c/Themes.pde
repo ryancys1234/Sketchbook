@@ -1,4 +1,4 @@
-void game() { //<>//
+void game() {
   textSize(15);
   image(sbv, 350, 0, 300, 160);
   fill(255);
