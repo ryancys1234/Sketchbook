@@ -1,17 +1,16 @@
 // Basketball game based on Slime Volleyball (oneslime.net).
 //
 /*
-   Problems: Foul system (3 bounces), reset after ball through hoop.
-   What's next: Instructions page.
-   
-*/
+   Learned: Boolean variables that stays true after their initiators are false must be put outside of such initiator loops.
+   Problems: Foul system (2 secs of player collison).
+ */
 
 import fisica.*;
 
 FWorld world;
 
 int mode = 0;
-final int game = 0;
+final int game = 0; 
 final int gameOverLeft = 1;
 final int gameOverRight = 2;
 
@@ -24,18 +23,21 @@ boolean thruHoop = false;
 
 int rightScore = 0, leftScore = 0;
 int betweenGamesTime = 180;
-int timer = 0, timeSeconds = 0, timeMinutes = 0;
-int leftFoul, rightFoul;
+int timer = 0, intTimeSeconds = 0, timeMinutes = 0;
+int leftFoul = 0, rightFoul = 0;
 int lBounceTimes = 0, rBounceTimes = 0;
 int seq = 0;
+int buttonColor;
+int lCollison = 1, rCollison = 1;
 
 FBox ground, lwall, twall, rwall, lbackboard, rbackboard, lstand, rstand;
 FCircle lplayer, rplayer, basketball;
 FLine lbasket, rbasket;
 
-PImage bv, bc, sbv, lbh, rbh;
+PImage bv, bc, sbv, lbh, rbh, j, bg;
 
 ArrayList lcontacts, rcontacts, bcontacts;
+ArrayList<instruction> instructions = new ArrayList<instruction>();
 
 void setup() {
   size(1000, 800);
@@ -54,6 +56,12 @@ void setup() {
 
   rbh = loadImage("rhoop.png");
   rbh.resize(100, 90);
+
+  j = loadImage("jersey.png");
+  j.resize(50, 50);
+
+  bg = loadImage("background.jpg");
+  bg.resize(1000, 800);
 
   Fisica.init(this);
   world = new FWorld();
@@ -114,7 +122,7 @@ void setup() {
   // Left basket ================================================================
   lbasket = new FLine(width/12, height/2 - 100, width/12 + 100, height/2 - 100);
 
-  lbasket.setStroke(0);
+  lbasket.setStroke(150);
   lbasket.setStrokeWeight(5);
   lbasket.setFriction(0);
   lbasket.setStatic(true);
@@ -125,7 +133,7 @@ void setup() {
   lbackboard = new FBox(10, 150);
 
   lbackboard.setPosition(width/12 - 10, height/2 - 150);
-  lbackboard.setFill(0);
+  lbackboard.setFill(150);
   lbackboard.setFriction(0);
   lbackboard.setNoStroke();
   lbackboard.setStatic(true);
@@ -136,7 +144,7 @@ void setup() {
   lstand = new FBox(30, 350);
 
   lstand.setPosition(width/12 - 35, height/2 + 50);
-  lstand.setFill(0);
+  lstand.setFill(150);
   lstand.setNoStroke();
   lstand.setStatic(true);
   lstand.setGrabbable(false);
@@ -146,7 +154,7 @@ void setup() {
   // Right basket ================================================================
   rbasket = new FLine(width*11/12, height/2 - 100, width*11/12 - 100, height/2 - 100);
 
-  rbasket.setStroke(0);
+  rbasket.setStroke(150);
   rbasket.setStrokeWeight(5);
   rbasket.setFriction(0);
   rbasket.setStatic(true);
@@ -157,7 +165,7 @@ void setup() {
   rbackboard = new FBox(10, 150);
 
   rbackboard.setPosition(width*11/12 + 10, height/2 - 150);
-  rbackboard.setFill(0);
+  rbackboard.setFill(150);
   rbackboard.setFriction(0);
   rbackboard.setNoStroke();
   rbackboard.setStatic(true);
@@ -168,7 +176,7 @@ void setup() {
   rstand = new FBox(30, 350);
 
   rstand.setPosition(width*11/12 + 35, height/2 + 50);
-  rstand.setFill(0);
+  rstand.setFill(150);
   rstand.setNoStroke();
   rstand.setStatic(true);
   rstand.setGrabbable(false);
@@ -228,13 +236,13 @@ void setup() {
 }
 
 void draw() {
-  background(255);
+  background(bg);
   world.step();
   world.draw();
 
   timer++;
   if (timer == 60) {
-    timeSeconds++;
+    intTimeSeconds++;
     timer = 0;
   }
 
@@ -248,6 +256,11 @@ void draw() {
 
   for (FContact c : lcontacts) {
     if (c.contains(ground)) leftCanJump = true;
+    if (c.contains(rplayer)) lCollison++;
+  }
+  
+  if (lCollison % 120 == 0) {
+    leftFoul++;
   }
 
   if (leftupkey && leftCanJump) {
@@ -283,6 +296,11 @@ void draw() {
 
   for (FContact c : rcontacts) {
     if (c.contains(ground)) rightCanJump = true;
+    if (c.contains(rplayer)) rCollison++;
+  }
+
+  if (rCollison % 120 == 0) {
+    rightFoul++;
   }
 
   if (rightupkey && rightCanJump) {
@@ -318,8 +336,8 @@ void draw() {
   for (FContact b : bcontacts) {
     if (b.contains(rbasket)) {
       leftScore++;
-      basketball.setPosition(width*11/12 - 50, height/2);
-      println(basketball.getY());
+      basketball.setPosition(width*11/12 - 50, height/2 - 70);
+      basketball.setVelocity(basketball.getX(), 10);
       thruHoop = true;
     }
 
@@ -329,30 +347,30 @@ void draw() {
 
     if (b.contains(lbasket)) {
       rightScore++;
-      basketball.setPosition(width/12 + 50, height/2);
-      println(basketball.getY());
+      basketball.setPosition(width/12 + 50, height/2 - 70);
+      basketball.setVelocity(basketball.getX(), 10);
       thruHoop = true;
     }
 
     if (b.contains(ground)) {
       basketball.setRotation(0.5);
     }
+  }
 
-    if ((basketball.getY() == height/2) && thruHoop == true) {
-      lplayer.setPosition(width*0.25, height*0.7);
-      lplayer.setVelocity(0, 0);
-      lplayer.setForce(0, 0);
-      rplayer.setPosition(width*0.75, height*0.7);
-      rplayer.setVelocity(0, 0);
-      rplayer.setForce(0, 0);
-      basketball.setPosition(width*0.25, height/2);
-      basketball.setVelocity(0, 0);
-      basketball.setForce(0, 0);
+  if ((basketball.getY() >= height*0.7) && thruHoop == true) {
+    lplayer.setPosition(width*0.25, height*0.7);
+    lplayer.setVelocity(0, 0);
+    lplayer.setForce(0, 0);
+    rplayer.setPosition(width*0.75, height*0.7);
+    rplayer.setVelocity(0, 0);
+    rplayer.setForce(0, 0);
+    basketball.setPosition(width*0.25, height/2);
+    basketball.setVelocity(0, 0);
+    basketball.setForce(0, 0);
 
-      timeSeconds = 0;
-      timeMinutes = 0;
-      thruHoop = false;
-    }
+    intTimeSeconds = 0;
+    timeMinutes = 0;
+    thruHoop = false;
   }
 
   if (mode == 0) {
@@ -394,10 +412,14 @@ void keyReleased() {
   if (keyCode == 'Q' || keyCode == 'q') leftqkey = false;
 }
 
-void mouseReleased() {
+void mousePressed() {
   if (mode == 0) {
     gameMouseReleased();
-  } else if (mode == 1) {
+  }
+}
+
+void mouseReleased() {
+  if (mode == 1) {
     leftMouseReleased();
   } else if (mode == 2) {
     rightMouseReleased();
