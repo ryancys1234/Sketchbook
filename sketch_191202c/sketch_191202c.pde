@@ -19,7 +19,7 @@ boolean rightupkey, rightdownkey, rightleftkey, rightrightkey, rightpkey, righti
 boolean leftCanJump = true, rightCanJump = true;
 boolean leftPlayerWins = false, rightPlayerWins = false;
 boolean ballUsed = false;
-boolean lThruHoop = false, rThruHoop;
+boolean lThruHoop = false, rThruHoop = false, lThruUpHoop = false, rThruUpHoop = false;
 boolean lTest = false, rTest = false;
 
 int rightScore = 0, leftScore = 0;
@@ -31,6 +31,7 @@ int seq = 0;
 int buttonColor;
 int lCollison = 1, rCollison = 1;
 int bXNum1, bXNum2;
+int gradient = 255;
 
 FBox ground, lwall, twall, rwall, lbackboard, rbackboard, lstand, rstand;
 FCircle lplayer, rplayer, basketball;
@@ -92,6 +93,7 @@ void setup() {
   lwall.setFriction(0);
   lwall.setNoStroke();
   lwall.setGrabbable(false);
+  lwall.setRestitution(0);
 
   world.add(lwall);
 
@@ -105,6 +107,7 @@ void setup() {
   twall.setFriction(0);
   twall.setNoStroke();
   twall.setGrabbable(false);
+  twall.setRestitution(0);
 
   world.add(twall);
 
@@ -118,6 +121,7 @@ void setup() {
   rwall.setFriction(0.5);
   rwall.setNoStroke();
   rwall.setGrabbable(false);
+  rwall.setRestitution(0);
 
   world.add(rwall);
 
@@ -342,14 +346,18 @@ void draw() {
   ArrayList<FContact> bcontacts = basketball.getContacts();
 
   for (FContact b : bcontacts) {
-    if (b.contains(rbasket)) {
+    if (b.contains(rbasket) && basketball.getVelocityY() < 0) {
+      lThruUpHoop = true;
+    }
+    
+    if (b.contains(rbasket) && basketball.getVelocityY() > 0 && lThruUpHoop == false) {
       leftScore++;
       basketball.setPosition(width*11/12 - 50, height/2 - 70);
       basketball.setVelocity(basketball.getX(), 10);
       lThruHoop = true;
     }
     
-    if (b.contains(lbasket)) {
+    if (b.contains(lbasket) && basketball.getVelocityY() > 1) {
       rightScore++;
       basketball.setPosition(width/12 + 50, height/2 - 70);
       basketball.setVelocity(basketball.getX(), 10);

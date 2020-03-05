@@ -44,10 +44,7 @@ void game() {
   }
 
   fill(buttonColor);
-  noStroke();
-  rect(width*7/8 - 75, height/32, 150, 50);
 
-  fill(255);
   textSize(20);
   textAlign(CENTER);
   text("Instructions", width*7/8, height/32 + 30);
@@ -83,7 +80,12 @@ void gameMouseReleased() {
 }
 
 void leftWins() {
-  background(255);
+  if (gradient == 255) {
+    gradient--;
+  } else if (gradient == 0) {
+    gradient++;
+  }
+  background(gradient);
   fill(93, 67, 214);
   textSize(100);
   text("Left Player Wins", width/2, height/2);
