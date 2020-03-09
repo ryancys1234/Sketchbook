@@ -13,6 +13,7 @@ int mode = 0;
 final int game = 0; 
 final int gameOverLeft = 1;
 final int gameOverRight = 2;
+final int gameOverGeneral = 3;
 
 boolean leftupkey, leftdownkey, leftleftkey, leftrightkey, leftekey, leftqkey;
 boolean rightupkey, rightdownkey, rightleftkey, rightrightkey, rightpkey, rightikey;
@@ -32,6 +33,7 @@ int buttonColor;
 int lCollison = 1, rCollison = 1;
 int bXNum1, bXNum2;
 int gradient = 255;
+int countdownTimer = 10, countdownTimerTime = 1;
 
 FBox ground, lwall, twall, rwall, lbackboard, rbackboard, lstand, rstand;
 FCircle lplayer, rplayer, basketball;
@@ -413,6 +415,8 @@ void draw() {
     leftWins();
   } else if (mode == 2) {
     rightWins();
+  } else if (mode == 3) {
+    lose();
   }
 }
 
@@ -457,5 +461,7 @@ void mouseReleased() {
     leftMouseReleased();
   } else if (mode == 2) {
     rightMouseReleased();
+  } else if (mode == 3) {
+    loseMouseReleased();
   }
 }

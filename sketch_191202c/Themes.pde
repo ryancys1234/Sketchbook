@@ -19,6 +19,19 @@ void game() {
     intTimeSeconds = 0;
   }
 
+  if (timeMinutes == 1 && intTimeSeconds >= 50 && intTimeSeconds <= 60) {
+    countdownTimerTime++;
+    fill(#FF7676);
+    text(countdownTimer, width/2, height/2);
+    if ((countdownTimerTime % 60) == 0) {
+      countdownTimer--;
+    }
+  }
+  
+  if (timeMinutes == 2) {
+    mode = 3;
+  }
+
   textSize(25);
   fill(#ED0202);
   text(rightScore, width/2 + 100, height*0.075);
@@ -48,11 +61,11 @@ void game() {
   textSize(20);
   textAlign(CENTER);
   text("Instructions", width*7/8, height/32 + 30);
-  
+
   if ((seq % 2) != 0) {
     instructions.add(new instruction());
   }
-  
+
   if (bXNum2 == 250) {
     fill(#FF7003);
     text("←", width/2 - 118, height*0.12 - 10);
@@ -69,14 +82,6 @@ void gameMouseReleased() {
   } else {
     buttonColor = #FF7B2E;
   }
-  
-  //for (int i = 0; i < instructions.size(); i++) {
-  //  instruction ins = instructions.get(i);
-  //  if (dist(mouseX, mouseY, width*7/8, height/32) <= 50) {
-  //    ins.show();
-  //    ins.act();
-  //  }
-  //}
 }
 
 void leftWins() {
@@ -105,7 +110,12 @@ void leftMouseReleased() {
 }
 
 void rightWins() {
-  background(255);
+  if (gradient == 255) {
+    gradient--;
+  } else if (gradient == 0) {
+    gradient++;
+  }
+  background(gradient);
   fill(255, 18, 34);
   textSize(100);
   text("Right Player Wins", width/2, height/2);
@@ -116,6 +126,26 @@ void rightWins() {
 }
 
 void rightMouseReleased() {
+  leftScore = 0;
+  rightScore = 0;
+  mode = 0;
+  setup();
+  leftPlayerWins = false;
+  rightPlayerWins = false;
+}
+
+void lose() {
+  background(0);
+  fill(255);
+  textSize(100);
+  text("Game Has Ended", width/2, height/2);
+  textAlign(CENTER);
+  textSize(30);
+  text("Click to Play Again", width/2, height*0.75);
+  textAlign(CENTER);
+}
+
+void loseMouseReleased() {
   leftScore = 0;
   rightScore = 0;
   mode = 0;
@@ -146,7 +176,7 @@ class instruction {
     text("→ = right", width*3/4, height/2 + 40);
     text("P = dribble", width*3/4, height/2 + 80);
     text("I = shoot", width*3/4, height/2 + 120);
-    
+
     text("Rules:", width/2, height/2 + 160);
     text("More than 2 seconds of player collison results in a foul.", width/2, height/2 + 180);
   }
