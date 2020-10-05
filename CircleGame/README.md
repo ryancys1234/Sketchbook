@@ -1,4 +1,4 @@
-# The Circle Game
+## The Circle Game
 
 The game is comprised of an arc rotating with respect to the position of the mouse. The main object is a ball that has to bounce on the rotating arc. The ball has to stay on the arc; falling off results in lives eliminated.
 
